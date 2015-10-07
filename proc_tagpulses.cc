@@ -1,5 +1,5 @@
 /*
- * g++ -O2 `$ROOTSYS/bin/root-config --libs` -I$ROOTSYS/include proc_tagpulses.cc -o proc_tagpulses_high
+ * g++ -O2 `$ROOTSYS/bin/root-config --libs` -I$ROOTSYS/include proc_tagpulses.cc -o proc_tagpulses_low
  */
 
 #define _CRTDBG_MAP_ALLOC
@@ -618,15 +618,16 @@ void get_pmt_pulses(vector<double> &pmtPulseHeight, vector<double> &pmtPulseTime
    * now, inside this function, assume *pmtHitTimes is sorted
    */
   // low-gain settings from Cf252 calibration fit
-  //double scaling[4] = {1.516, 1.337, 1.637, 1.532}; // mV/PE
-  //double s0 = 2.3; // mV
-  //double s1[4] = {2.886, 2.663, 1.768, 2.181}; // sqrt(mV)
-
-  //high-gain settings from Cf252 calibration fit
-  double scaling[4] = {2.279, 1.992, 1.951, 2.047}; // mV/PE
+  double scaling[4] = {2.361, 2.159, 2.317, 2.203}; // mV/PE
   double s0 = 2.3; // mV
-  double s1[4] = {1.703, 1.667, 1.95, 1.753}; // sqrt(mV)
-
+  double s1[4] = {1.53, 1.53, 1.53, 1.53}; // sqrt(mV)
+	
+  //high-gain settings from Cf252 calibration fit
+  //double scaling[4] = {2.585, 2.375, 2.472, 2.488}; // mV/PE
+  //double s0 = 2.3; // mV
+  //double s1[4] = {1.97, 1.97, 1.97, 1.97}; // sqrt(mV)
+  
+  // Melinda's parameters:
   double firstOrderScale = 2.5;
   double secondOrderScale = 0.9;
 
