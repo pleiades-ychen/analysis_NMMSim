@@ -3,9 +3,9 @@
 !running_energy_scale/
 !detection_efficiency/
 !second_proc/
-!second_proc/ph_likelihood_versions/
 !second_proc/use_as_shared_lib/
 !scripts/
+!scripts/ph_likelihood_versions/
 *~
 *.o
 *.d
