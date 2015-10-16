@@ -11,6 +11,7 @@
 
 {
 #include <algorithm>
+#define Targ_Multi 8;
 
   if (!TClass::GetDict("NMMEvent")) {
     gROOT->ProcessLine(".L ../second_proc/NMMEvent.cc+");
@@ -20,6 +21,9 @@
   TH1F * h1 = new TH1F("h1","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
   TH1F * h2 = new TH1F("h2","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
   TH1F * h3 = new TH1F("h3","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
+  TH1F * h1a = new TH1F("h1a","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
+  TH1F * h2a = new TH1F("h2a","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
+  TH1F * h3a = new TH1F("h3a","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
   TH1F * h1b = new TH1F("h1b","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
   TH1F * h2b = new TH1F("h2b","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
   TH1F * h3b = new TH1F("h3b","Pulse Height Likelihood; n/(n+g);Events",120,-0.1,1.1);
@@ -47,7 +51,7 @@
    
     int N = nmm->N;
     int M = nmm->M;
-    if(M!=4) continue; // change this to work on different multiplicities
+    if(N==0) continue; 
     vector<double> ph = nmm->pulseHeights;
     //double phmax = 0.;
     //for (int i = 0; i < N; i++) {
@@ -77,16 +81,26 @@
       nllh = ph_likelihood(ph,"n","l");
       gllh = ph_likelihood(ph,"g","l");
       double L = nllh / (nllh + gllh);
-      
-      if (N==M){
+
+      if(N == Targ_Multi && N==M+1){
 	if (type=="pfn") h1->Fill(L);
 	if (type=="contam_muon") h2->Fill(L);
 	if (type=="contam_other") h3->Fill(L);
       }
-      else if(N==(M+1)){
-	if (type=="pfn") h1b->Fill(L);
-	if (type=="contam_muon") h2b->Fill(L);
-	if (type=="contam_other") h3b->Fill(L);
+
+      if(N == Targ_Multi-1){
+      
+	if (N==M){
+	  if (type=="pfn") h1a->Fill(L);
+	  if (type=="contam_muon") h2a->Fill(L);
+	  if (type=="contam_other") h3a->Fill(L);
+	}
+	else if(N==(M+1)){
+	  if (type=="pfn") h1b->Fill(L);
+	  if (type=="contam_muon") h2b->Fill(L);
+	  if (type=="contam_other") h3b->Fill(L);
+	}
+	
       }
 
       for (int i = 0; i < ph.size(); i++){
@@ -132,13 +146,36 @@
   leg.AddEntry(h3,"Other Involved Contaminated","l");
   leg.Draw();
 
-  cout << "Events with N = M:\n";
-  cout << "Pure Fast Neutron Events:\t" << h1->Integral() << "+/-" 
-       << sqrt(h1->Integral()) <<"\n";
-  cout << "Normalized to 158 live days:\t" << ScFactor*(h1->Integral()) << "+/-" 
-       << ScFactor*sqrt(h1->Integral()) <<"\n";
-  //cout << "Muon Involved Contaminated Events:\t" << h2->Integral() << "\n";
-  //cout << "Other Involved Contaminated Events:\t" << h3->Integral() << "\n";
+  cout << "Counts of events with M'-1 neutrons and 1 contaminat:\n";
+  cout << "\tEvents with N = M+1 = M':\n";
+  //cout << "Pure Fast Neutron Events:\t" << h1->Integral() << "+/-" 
+  // << sqrt(h1->Integral()) <<"\n";
+  cout << "\tMuon Involved Contaminated Events:\t" << h2->Integral() << "\n";
+  cout << "\tOther Involved Contaminated Events:\t" << h3->Integral() << "\n";
+  cout << "\tTotal 4n+1contam events:\t" << (h2->Integral() + h3->Integral()) << "+/-"
+       << sqrt(h2->Integral() + h3->Integral()) <<"\n";
+  cout << "Normalized to 158 live days:\t" << ScFactor*(h2->Integral() + h3->Integral()) << "+/-"
+       << ScFactor*sqrt(h2->Integral() + h3->Integral()) <<"\n";
+
+  new TCanvas;
+  h1a->SetLineColor(kBlue);
+  h1a->SetTitle("Pulse Height Likelihood; n/(n+g);Events");
+  h2a->SetLineColor(kMagenta);
+  h3a->SetLineColor(kRed);
+  h1a->SetLineWidth(2);
+  h2a->SetLineWidth(2);
+  h3a->SetLineWidth(2);
+  h1a->Draw();
+  h2a->Draw("same");
+  h3a->Draw("same");
+  gPad->SetLogy();
+  gPad->SetGridx();
+  gPad->SetGridy();  
+  TLegend leg_1a(0.6,0.65,0.88,0.85);
+  leg_1a.AddEntry(h1a,"Fast Neutron","l");
+  leg_1a.AddEntry(h2a,"Muon Involved Contaminated","l");
+  leg_1a.AddEntry(h3a,"Other Involved Contaminated","l");
+  leg_1a.Draw();
 
   new TCanvas;
   h1b->SetLineColor(kBlue);
@@ -160,14 +197,27 @@
   leg_1b.AddEntry(h3b,"Other Involved Contaminated","l");
   leg_1b.Draw();
 
-  cout << "Events with N = M + 1:\n";
+  cout << "Counts of events with M'-1 MC Pulses:\n";
+  cout << "\tEvents with N = M:\n";
+  cout << "\tPure Fast Neutron Events:\t" << h1a->Integral() << "+/-" 
+       << sqrt(h1a->Integral()) <<"\n";
+  cout << "Normalized to 158 live days:\t" << ScFactor*(h1a->Integral()) << "+/-" 
+       << ScFactor*sqrt(h1a->Integral()) <<"\n";
+  //cout << "Muon Involved Contaminated Events:\t" << h2a->Integral() << "\n";
+  //cout << "Other Involved Contaminated Events:\t" << h3a->Integral() << "\n";
+  cout << "\tEvents with N = M + 1:\n";
   //cout << "Pure Fast Neutron Events:\t" << h1b->Integral() << "\n";
-  cout << "Muon Involved Contaminated Events:\t" << h2b->Integral() << "\n";
-  cout << "Other Involved Contaminated Events:\t" << h3b->Integral() << "\n";
-  cout << "Total 4n+1contam events:\t" << (h2b->Integral() + h3b->Integral()) << "+/-"
+  cout << "\tMuon Involved Contaminated Events:\t" << h2b->Integral() << "\n";
+  cout << "\tOther Involved Contaminated Events:\t" << h3b->Integral() << "\n";
+  cout << "\tTotal 3n+1contam events:\t" << (h2b->Integral() + h3b->Integral()) << "+/-"
        << sqrt(h2b->Integral() + h3b->Integral()) <<"\n";
   cout << "Normalized to 158 live days:\t" << ScFactor*(h2b->Integral() + h3b->Integral()) << "+/-"
        << ScFactor*sqrt(h2b->Integral() + h3b->Integral()) <<"\n";
+
+  cout << "\tTotal 4 mc-pulse events:\t" << (h1a->Integral() + h2b->Integral() + h3b->Integral()) << "+/-"
+       << sqrt(h1a->Integral() + h2b->Integral() + h3b->Integral()) <<"\n";
+  cout << "Normalized to 158 live days:\t" << ScFactor*(h1a->Integral() + h2b->Integral() + h3b->Integral()) << "+/-"
+       << ScFactor*sqrt(h1a->Integral() + h2b->Integral() + h3b->Integral()) <<"\n";
 
   new TCanvas;
   hBkgMu->SetLineColor(kMagenta);
